@@ -8,7 +8,7 @@ using namespace std;
 
 //Please replace the following address with the address of your server
 #define ADDRESS    "tcp://192.168.0.177:1883"
-#define CLIENTID   "rpi1"
+#define CLIENTID   "rpiPublisher"
 #define AUTHMETHOD "rageobi"
 #define AUTHTOKEN  "llll"
 #define TOPIC      "ee513/CPUTemp"
