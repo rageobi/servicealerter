@@ -9,17 +9,20 @@ class MQTT{
 		SUBSCRIBER 		= 1
 	};
 private: 
-volatile MQTTClient_deliveryToken deliveredtoken;
-const char* ADDRESS;
-const char* CLIENTID;  
-const char* AUTHMETHOD; 
-const char* AUTHTOKEN;
-const char* TOPIC;
-int QOS;
-long int TIMEOUT; 
+	friend void delivered(void *context, MQTTClient_deliveryToken dt);
+	friend int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) ;
+	friend void connlost(void *context, char *cause) ;
+	const char* ADDRESS;
+	const char* CLIENTID;  
+	const char* AUTHMETHOD; 
+	const char* AUTHTOKEN;
+	const char* TOPIC;
+	const char* LWT;
+	int QOS;
+	long int TIMEOUT; 
 public:
 
-	MQTT(const char* ADDRESS,const char* CLIENTID  ,const char* AUTHMETHOD ,const char* AUTHTOKEN ,const char* TOPIC,int QOS,long int TIMEOUT  ){
+	MQTT(const char* ADDRESS,const char* CLIENTID  ,const char* AUTHMETHOD ,const char* AUTHTOKEN ,const char* TOPIC,const char* LWT ,int QOS,long int TIMEOUT  ){
 	this->ADDRESS= ADDRESS;
 	this->CLIENTID= CLIENTID;
 	this->AUTHMETHOD= AUTHMETHOD;
@@ -27,11 +30,12 @@ public:
 	this->TOPIC= TOPIC;
 	this->QOS= QOS;
 	this->TIMEOUT= TIMEOUT;
+	this->LWT=LWT;
 	}
-	static void delivered(void *context, MQTTClient_deliveryToken dt);
-	static int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) ;
-	static void connlost(void *context, char *cause) ;
 	void EstablishConnection(MQTT::Type type,const char * jsonPayload="");
 	virtual ~MQTT();
 };
+void delivered(void *context, MQTTClient_deliveryToken dt);
+int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) ;
+void connlost(void *context, char *cause) ;
 #endif

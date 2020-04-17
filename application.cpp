@@ -44,13 +44,13 @@ using namespace exploringRPi;
 #define TOPIC      "ee513/CPUTemp"
 #define QOS        1
 #define TIMEOUT    10000L
-
+#define LWT        "LWTTTTTTTTTT"
 int main() {
    ADXL345 sensor(1,0x53);
    sensor.setResolution(ADXL345::NORMAL);
    sensor.setRange(ADXL345::PLUSMINUS_4_G);
    sensor.readSensorState();
-   MQTT obj= MQTT(ADDRESS,CLIENTID,AUTHMETHOD,AUTHTOKEN,TOPIC,QOS,TIMEOUT);
+   MQTT obj= MQTT(ADDRESS,CLIENTID,AUTHMETHOD,AUTHTOKEN,TOPIC,LWT,QOS,TIMEOUT);
    const char * jsonPayload= jsonCharacteriser(sensor.getPitch(),sensor.getRoll());
    //cout<<jsonPayload;
    obj.EstablishConnection(MQTT::PUBLISHER,jsonPayload);

@@ -21,7 +21,8 @@ char* getDateTime(){
   struct tm * timeinfo;
   time (&rawtime);
   timeinfo = localtime (&rawtime);
-  char *time = asctime(timeinfo);
+  char *time = (char *)malloc(8);
+  sprintf(time, "%.2d:%.2d:%.2d",timeinfo->tm_hour,timeinfo->tm_min, timeinfo->tm_sec);
   if (time[strlen(time)-1] == '\n') time[strlen(time)-1] = '\0';
   return time;
 }
@@ -36,7 +37,7 @@ const char * jsonCharacteriser(float pitchVal, float rollVal){
    json_object *dateTime = json_object_new_string(getDateTime());
    
    json_object_object_add(jobj,"temp", temp);
-   json_object_object_add(jobj,"date", dateTime);
+   json_object_object_add(jobj,"time", dateTime);
    json_object_object_add(jobj,"pitch", pitch);
    json_object_object_add(jobj,"roll", roll);
    

@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "MQTTClient.h"
+#include<iostream>
 
 #define ADDRESS    "tcp://192.168.0.177:1883"
 #define CLIENTID    "rpi2"
@@ -9,9 +10,10 @@
 #define AUTHTOKEN  "llll"
 #define TOPIC      "ee513/CPUTemp"
 #define PAYLOAD     "Hello World!"
-#define QOS         1
+#define QOS         2
 #define TIMEOUT     10000L
-
+#define LWT    "LWTTTTTTTTTTTTTTTTTTTTTTTTTT"
+using namespace std;
 volatile MQTTClient_deliveryToken deliveredtoken;
 
 void delivered(void *context, MQTTClient_deliveryToken dt) {
@@ -51,7 +53,12 @@ int main(int argc, char* argv[]) {
     opts.cleansession = 1;
     opts.username = AUTHMETHOD;
     opts.password = AUTHTOKEN;
-
+    MQTTClient_willOptions wills= MQTTClient_willOptions_initializer;
+    wills.topicName=TOPIC;
+    printf("Will is:%s",wills.topicName);
+    wills.message =LWT;
+    opts.will=&wills;
+    printf("Will is:%s",opts.will->message);
     MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered);
     if ((rc = MQTTClient_connect(client, &opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);

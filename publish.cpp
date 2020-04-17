@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string.h>
 #include "MQTTClient.h"
+#include "AppFunctions.h"
 #define  CPU_TEMP "/sys/class/thermal/thermal_zone0/temp"
 using namespace std;
 
@@ -12,17 +13,17 @@ using namespace std;
 #define AUTHMETHOD "rageobi"
 #define AUTHTOKEN  "llll"
 #define TOPIC      "ee513/CPUTemp"
-#define QOS        1
+#define QOS        2
 #define TIMEOUT    10000L
-
-float getCPUTemperature() {        // get the CPU temperature
+#define LWT    "LWTTTTTTTTTTTTTTTTTTTTTTTTTT"
+/*float getCPUTemperature() {        // get the CPU temperature
    int cpuTemp;                    // store as an int
    fstream fs;
    fs.open(CPU_TEMP, fstream::in); // read from the file
    fs >> cpuTemp;
    fs.close();
    return (((float)cpuTemp)/1000);
-}
+}*/
 
 int main(int argc, char* argv[]) {
    char str_payload[100];          // Set your max message size here
@@ -35,6 +36,11 @@ int main(int argc, char* argv[]) {
    opts.cleansession = 1;
    opts.username = AUTHMETHOD;
    opts.password = AUTHTOKEN;
+   MQTTClient_willOptions will= MQTTClient_willOptions_initializer;
+   will.topicName=TOPIC;
+   will.message =LWT;
+   will.qos=QOS;
+   opts.will=&will;
    int rc;
    if ((rc = MQTTClient_connect(client, &opts)) != MQTTCLIENT_SUCCESS) {
       cout << "Failed to connect, return code " << rc << endl;

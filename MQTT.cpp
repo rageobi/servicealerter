@@ -5,12 +5,12 @@
 #include "string.h"
 #include "MQTT.h"
 using namespace std;
-void MQTT::delivered(void *context, MQTTClient_deliveryToken dt){
-		
+volatile MQTTClient_deliveryToken deliveredtoken;
+void delivered(void *context, MQTTClient_deliveryToken dt){
     printf("Message with token value %d delivery confirmed\n", dt);
-    //deliveredtoken = dt;
+    deliveredtoken = dt;
 }
-int MQTT::msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
+int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
     int i;
     char* payloadptr;
     printf("Message arrived\n");
@@ -26,7 +26,7 @@ int MQTT::msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_mess
     return 1;
 }
 
-void MQTT::connlost(void *context, char *cause) {
+void connlost(void *context, char *cause) {
     printf("\nConnection lost\n");
     printf("     cause: %s\n", cause);
 }
@@ -43,10 +43,16 @@ void MQTT::EstablishConnection(MQTT::Type type,const char * jsonPayload) {
    opts.cleansession = 1;
    opts.username = AUTHMETHOD;
    opts.password = AUTHTOKEN;
+   MQTTClient_willOptions will= MQTTClient_willOptions_initializer;
+   will.topicName=TOPIC;
+   will.message =LWT;
+   will.qos=QOS;
+   opts.will=&will;
+
    int rc;
    
    if(MQTT::PUBLISHER!=type){
-	MQTTClient_setCallbacks(client, NULL, MQTT::connlost, MQTT::msgarrvd, MQTT::delivered);
+	MQTTClient_setCallbacks(client, NULL,connlost, msgarrvd,delivered);
 	}
    
    if ((rc = MQTTClient_connect(client, &opts)) != MQTTCLIENT_SUCCESS) {
