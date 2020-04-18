@@ -31,38 +31,41 @@ void connlost(void *context, char *cause) {
     printf("     cause: %s\n", cause);
 }
 
-void MQTT::EstablishConnection(MQTT::Type type,const char * jsonPayload) {
-   char str_payload[100];
-   int ch;     
-   MQTTClient client;
-   MQTTClient_connectOptions opts = MQTTClient_connectOptions_initializer;
-   MQTTClient_message pubmsg = MQTTClient_message_initializer;
-   MQTTClient_deliveryToken token;
-   MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+void MQTT::EstablishConnection(MQTT::Type type) {
+   
+   this->type=type;
+   MQTTClient_connectOptions opts= MQTTClient_connectOptions_initializer;
+   
+   
+   MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_DEFAULT, NULL);
    opts.keepAliveInterval = 20;
    opts.cleansession = 1;
    opts.username = AUTHMETHOD;
    opts.password = AUTHTOKEN;
+   if(MQTT::PUBLISHER==type){
    MQTTClient_willOptions will= MQTTClient_willOptions_initializer;
    will.topicName=TOPIC;
    will.message =LWT;
-   will.qos=QOS;
+   //will.qos=QOS;
    opts.will=&will;
-
+}
    int rc;
    
    if(MQTT::PUBLISHER!=type){
 	MQTTClient_setCallbacks(client, NULL,connlost, msgarrvd,delivered);
 	}
    
-   if ((rc = MQTTClient_connect(client, &opts)) != MQTTCLIENT_SUCCESS) {
+   if ((rc = MQTTClient_connect(this->client, &opts)) != MQTTCLIENT_SUCCESS) {
       cout << "Failed to connect, return code " << rc << endl;
       exit(-1); 
    }
-   if(MQTT::PUBLISHER!=type){
+}
+void MQTT::messageROS(const char * jsonPayload){
+   int ch; 
+   if(MQTT::PUBLISHER!=this->type){
 		printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
            "Press Q<Enter> to quit\n\n", TOPIC, CLIENTID, QOS);
-		MQTTClient_subscribe(client, TOPIC, QOS);
+		MQTTClient_subscribe(this->client, TOPIC, QOS);
 
 		do{
 			ch = getchar();
@@ -70,22 +73,24 @@ void MQTT::EstablishConnection(MQTT::Type type,const char * jsonPayload) {
 	}
 	
    else{
+	   MQTTClient_message pubmsg = MQTTClient_message_initializer;
+	   MQTTClient_deliveryToken token;
+	   char str_payload[150];
 	   sprintf(str_payload,jsonPayload);
 	   pubmsg.payload = str_payload;
 	   pubmsg.payloadlen = strlen(str_payload);
 	   pubmsg.qos = QOS;
-	   pubmsg.retained = 0;
 	   MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
 	   cout << "Waiting for up to " << (int)(TIMEOUT/1000) <<
 			" seconds for publication of " << str_payload <<
 			" \non topic " << TOPIC << " for ClientID: " << CLIENTID << endl;
-	   rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
+	   MQTTClient_waitForCompletion(client, token, TIMEOUT);
 	   cout << "Message with token " << (int)token << " delivered." << endl;
    }
-   
-   MQTTClient_disconnect(client, 10000);
-   MQTTClient_destroy(&client);
 
-};
+}
 MQTT::~MQTT(){
+	cout<<"Ending Connection\n";
+	MQTTClient_disconnect(this->client, 10000);
+    MQTTClient_destroy(&(this->client));
 }

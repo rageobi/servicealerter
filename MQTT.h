@@ -8,7 +8,8 @@ class MQTT{
 		PUBLISHER 		= 0,
 		SUBSCRIBER 		= 1
 	};
-private: 
+private:
+	MQTT::Type type;
 	friend void delivered(void *context, MQTTClient_deliveryToken dt);
 	friend int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) ;
 	friend void connlost(void *context, char *cause) ;
@@ -18,6 +19,8 @@ private:
 	const char* AUTHTOKEN;
 	const char* TOPIC;
 	const char* LWT;
+	MQTTClient client;
+	//MQTTClient_connectOptions opts;
 	int QOS;
 	long int TIMEOUT; 
 public:
@@ -32,7 +35,8 @@ public:
 	this->TIMEOUT= TIMEOUT;
 	this->LWT=LWT;
 	}
-	void EstablishConnection(MQTT::Type type,const char * jsonPayload="");
+	void EstablishConnection(MQTT::Type type);
+	void messageROS(const char * jsonPayload="");
 	virtual ~MQTT();
 };
 void delivered(void *context, MQTTClient_deliveryToken dt);

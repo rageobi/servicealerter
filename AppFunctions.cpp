@@ -23,7 +23,7 @@ char* getDateTime(){
   timeinfo = localtime (&rawtime);
   char *time = (char *)malloc(8);
   sprintf(time, "%.2d:%.2d:%.2d",timeinfo->tm_hour,timeinfo->tm_min, timeinfo->tm_sec);
-  if (time[strlen(time)-1] == '\n') time[strlen(time)-1] = '\0';
+  //if (time[strlen(time)-1] == '\n') time[strlen(time)-1] = '\0';
   return time;
 }
 
